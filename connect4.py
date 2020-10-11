@@ -90,6 +90,7 @@ Hints:
 
 # use math library if needed
 import math
+import random
 
 def get_child_boards(player, board):
     """
@@ -214,23 +215,71 @@ def minimax(player, board, depth_limit):
         None to give up the game
     """
     max_player = player
+    print('max_player chance',max_player)
     placement = None
 
 ### Please finish the code below ##############################################
 ###############################################################################
     def value(player, board, depth_limit):
-        pass
-
+        if depth_limit == 0 or board.terminal() == True:  # game finished
+            print('depth zero')
+            if player == board.PLAYER1:
+                score = evaluate(player,board)
+                return score,None
+            else:
+                score = evaluate(next_player,board)
+                return score,None
+         
+        else:
+            
+            if player == board.PLAYER1:  # max player
+                v,placement = max_value(player,board,depth_limit)
+                return v,placement
+            
+            else: 
+                v,placement = min_value(next_player,board,depth_limit)
+                return v,placement
+            
     def max_value(player, board, depth_limit):
-        pass
+        print('inside max')
+        v = -math.inf
+        all_childs = get_child_boards(player,board)     # child = (column,board)
+        for child in all_childs:
+            column = child[0]
+            new_board = child[1]
+
+            new_value,new_placement = value(next_player,new_board,depth_limit - 1)
+            print('v',v)
+            if new_value > v:
+                v = new_value
+                placement = child[0]
+                
+        return v,placement
     
     def min_value(player, board, depth_limit):
-        pass
+        print('inside max')
+        v = +math.inf
 
+        all_childs = get_child_boards(player,board)
+        for child in all_childs:
+            column = child[0]
+            new_board = child[1]
+
+            new_value,new_placement = value(next_player,new_board,depth_limit - 1)
+            if new_value < v:
+                v = new_value
+                placement = child[0]
+                
+        return v,placement
+        
+    
     next_player = board.PLAYER2 if player == board.PLAYER1 else board.PLAYER1
     score = -math.inf
-
+   
+    v,placement = value(player,board,depth_limit)
+    #print(placement)
 ###############################################################################
+    
     return placement
 
 
@@ -258,22 +307,71 @@ def alphabeta(player, board, depth_limit):
         None to give up the game
     """
     max_player = player
+    #print('player-->',max_player)
     placement = None
 
 ### Please finish the code below ##############################################
 ###############################################################################
-    def value(player, board, depth_limit):
-        pass
-
-    def max_value(player, board, depth_limit):
-        pass
-    
-    def min_value(player, board, depth_limit):
-        pass
+    def value(player, board, depth_limit,alpha,beta):
+        
+        if depth_limit == 0 or board.terminal() == True:
+            if player == board.PLAYER1:
+                score = evaluate(player,board)
+                return score,None
+            
+            else:
+                score = evaluate(next_player,board)
+                return score,None
+            
+        if player == board.PLAYER1:
+            v,placement = max_value(player,board,depth_limit,alpha,beta)
+            return v,placement
+        
+        else:
+            v,placement = min_value(player,board,depth_limit,alpha,beta)
+            return v,placement
+        
+    def max_value(player, board, depth_limit,alpha,beta):
+        v = -math.inf
+        all_childs = get_child_boards(player,board)
+        for child in all_childs:
+            column = child[0]
+            new_board = child[1]
+            new_value,new_placement = value(next_player,new_board,depth_limit - 1,alpha,beta)
+            print('v all',new_value)
+            if new_value > v:
+                v = new_value
+                placement = child[0]
+            if v >= beta:
+                break
+            alpha = max(alpha,v)
+        return v,placement
+            
+    def min_value(player, board, depth_limit,alpha,beta):
+        v = +math.inf
+        all_childs = get_child_boards(player,board)
+        for child in all_childs:
+            column = child[0]
+            new_board = child[1]
+            new_value,new_placement = value(next_player,new_board,depth_limit - 1,alpha,beta)
+            if new_value < v:
+                v = new_value
+                placement = child[0]
+            if new_value<beta:
+                beta = new_value
+            if alpha>=beta:
+                break
+        return v,placement
 
     next_player = board.PLAYER2 if player == board.PLAYER1 else board.PLAYER1
+    
     score = -math.inf
+    alpha = -math.inf
+    beta = +math.inf
+    
+    v,placement = value(player,board,depth_limit,alpha,beta)
 ###############################################################################
+    print('v',v,'p',placement)
     return placement
 
 
@@ -304,26 +402,69 @@ def expectimax(player, board, depth_limit):
     """
     max_player = player
     placement = None
-
+    
 ### Please finish the code below ##############################################
 ###############################################################################
     def value(player, board, depth_limit):
-        pass
-
+        if depth_limit == 0 or board.terminal() == True:
+            
+            if player == board.PLAYER1:
+                score = evaluate(player,board)
+                return score,None
+            else:
+                score = evaluate(next_player,board)
+                return score,None
+            
+        if player == board.PLAYER1:
+            v,placement = max_value(player, board, depth_limit)
+            return v,placement
+        
+        else:
+            v,placement = min_value(player,board,depth_limit)
+            return v,placement
+        
     def max_value(player, board, depth_limit):
-        pass
+        v = -math.inf
+        all_childs = get_child_boards(player,board)     # child = (column,board)
+        for child in all_childs:
+            column = child[0]
+            new_board = child[1]
+
+            new_value,new_placement = value(next_player,new_board,depth_limit - 1)
+ 
+            if new_value > v:
+                v = new_value
+                placement = child[0]
+                
+        return v,placement
     
     def min_value(player, board, depth_limit):
-        pass
+    
+        v = +math.inf                                   # play as per min
+        all_childs = get_child_boards(player,board)
+        for child in all_childs:
+            column = child[0]
+            new_board = child[1]
 
+            new_value,new_placement = value(next_player,new_board,depth_limit - 1)
+            if new_value < v:
+                v = new_value
+                placement = child[0]
+            
+        return v,placement
+            
+            
     next_player = board.PLAYER2 if player == board.PLAYER1 else board.PLAYER1
     score = -math.inf
 ###############################################################################
+
+    v,placement = value(player,board,depth_limit)
+    
     return placement
 
 
 if __name__ == "__main__":
-    from utils.app import App
+    from app import App
     import tkinter
 
     algs = {

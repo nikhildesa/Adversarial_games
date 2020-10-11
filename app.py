@@ -10,7 +10,7 @@
 
 import random, time
 import tkinter as tk
-from .utils import ordinal
+from utils import ordinal
 
 class Board(object):
 
